@@ -1,5 +1,5 @@
 {
-  "name": "立木調査ツール v2.1",
+  "name": "立木調査ツール",
   "short_name": "立木調査",
   "start_url": "./index.html",
   "display": "standalone",
@@ -21,3 +21,4 @@
     }
   ]
 }
+
