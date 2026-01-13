@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tree-survey-v1.2.1</title>
+    <title>tree-survey-v1.2.2</title>
     <style>
         body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; }
@@ -16,7 +16,7 @@
         .input-row { display: flex; flex-direction: column; margin-bottom: 12px; }
         .label-group { display: flex; align-items: baseline; margin-bottom: 4px; }
         .label-group label { width: 110px; font-size: 0.9em; font-weight: bold; }
-        .label-group .guide { font-size: 0.75em; color: #666; font-weight: normal; } /* 注釈スタイル */
+        .label-group .guide { font-size: 0.75em; color: #666; font-weight: normal; }
 
         .input-row input, .input-row select {
             width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
@@ -38,13 +38,13 @@
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { background: #ffc107; color: #212529; padding: 6px; width: 45px; border-radius: 4px; font-size: 11px; }
         .del-btn { background: #dc3545; color: white; padding: 6px; width: 45px; border-radius: 4px; font-size: 11px; }
-        .voice-guide-footer { font-size: 0.8em; color: #dc3545; margin-top: 10px; font-weight: bold; text-align: center; }
+        .voice-guide-footer { font-size: 0.82em; color: #dc3545; margin-top: 12px; font-weight: bold; text-align: center; background: #fff5f5; padding: 8px; border-radius: 8px; border: 1px dashed #dc3545; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 id="formTitle">立木調査v1.2.1</h2>
+    <h2 id="formTitle">立木調査v1.2.2</h2>
     <div id="voiceStatus">音声入力：オフ</div>
     
     <input type="hidden" id="editId" value="">
@@ -60,7 +60,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>立木番号</label>
-            <span class="guide">※手入力（自動連番）</span>
+            <span class="guide">※手入力（１の後は自動連番）</span>
         </div>
         <input type="number" id="treeNo" inputmode="numeric">
     </div>
@@ -68,7 +68,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>樹種</label>
-            <span class="guide">※発音例「じゅしゅ すぎ」</span>
+            <span class="guide">※発音例「しゅるい すぎ」</span>
         </div>
         <select id="treeType">
             <option value="スギ">スギ</option><option value="ヒノキ">ヒノキ</option>
@@ -79,7 +79,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>胸高直径 (cm)</label>
-            <span class="guide">※発音例「ちょっけい 30」</span>
+            <span class="guide">※発音例「ちょっけい さん ぜろ」</span>
         </div>
         <input type="number" step="0.1" id="dbh" inputmode="decimal">
     </div>
@@ -87,7 +87,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>樹高 (m)</label>
-            <span class="guide">※発音例「たかさ 20」</span>
+            <span class="guide">※発音例「たかさ に ぜろ」</span>
         </div>
         <input type="number" step="0.1" id="height" inputmode="decimal">
     </div>
@@ -116,7 +116,7 @@
         <button id="cancelBtn" class="cancel-btn" onclick="resetForm()">取消</button>
         <button class="export-btn" onclick="handleExport()">CSV出力</button>
     </div>
-    <div class="voice-guide-footer">※入力完了は「ほぞん」と発音</div>
+    <div class="voice-guide-footer">※入力が終わりましたら「ほぞん」と発音して下さい。</div>
 </div>
 
 <div class="card">
@@ -133,6 +133,7 @@
 </div>
 
 <script>
+    // --- 音声認識設定 ---
     let recognition;
     let isListening = false;
     const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
@@ -146,7 +147,7 @@
         recognition.onresult = (event) => {
             let lastText = event.results[event.results.length - 1][0].transcript.trim();
             document.getElementById('voiceStatus').innerText = "認識中: " + lastText;
-            processVoiceCommand(lastText.toLowerCase()); // 小文字化して英字(A,B,C)の判定を楽にする
+            processVoiceCommand(lastText.toLowerCase());
         };
 
         recognition.onend = () => { if (isListening) recognition.start(); };
@@ -171,46 +172,47 @@
     }
 
     function processVoiceCommand(text) {
+        // 数字のみを抽出する関数
         const getNum = (str) => {
             const m = str.replace(/ /g, "").match(/\d+(\.\d+)?/);
             return m ? m[0] : null;
         };
 
-        // 保存コマンド
+        // 1. 保存処理
         if (text.includes("保存") || text.includes("ほぞん")) {
             handleSave();
             return;
         }
 
-        // 樹種（「じゅしゅ」の後に続く言葉）
-        if (text.includes("樹種") || text.includes("じゅしゅ")) {
+        // 2. 樹種（「しゅるい」で判定）
+        if (text.includes("種類") || text.includes("しゅるい")) {
             if (text.includes("すぎ") || text.includes("スギ")) document.getElementById('treeType').value = "スギ";
             if (text.includes("ひのき") || text.includes("ヒノキ")) document.getElementById('treeType').value = "ヒノキ";
             if (text.includes("たしん") || text.includes("他針")) document.getElementById('treeType').value = "他針";
             if (text.includes("たこう") || text.includes("他広")) document.getElementById('treeType').value = "他広";
         } 
-        // 直径
+        // 3. 直径
         else if (text.includes("直径") || text.includes("ちょっけい")) {
             const n = getNum(text); if(n) document.getElementById('dbh').value = n;
         }
-        // 樹高（「たかさ」に反応）
-        else if (text.includes("高さ") || text.includes("たかさ") || text.includes("高さ")) {
+        // 4. 樹高（「たかさ」で判定）
+        else if (text.includes("高さ") || text.includes("たかさ")) {
             const n = getNum(text); if(n) document.getElementById('height').value = n;
         }
-        // 材質（「ざいしつ」）
+        // 5. 材質
         else if (text.includes("材質") || text.includes("ざいしつ")) {
             if (text.includes("a") || text.includes("エー")) document.getElementById('quality').value = "A";
             if (text.includes("b") || text.includes("ビー")) document.getElementById('quality').value = "B";
             if (text.includes("c") || text.includes("シー")) document.getElementById('quality').value = "C";
         }
-        // 備考（「めも」）
+        // 6. 備考（「めも」で判定）
         else if (text.includes("メモ") || text.includes("めも")) {
             let val = text.replace(/メモ|めも/, "").trim();
             document.getElementById('memo').value = val;
         }
     }
 
-    // --- 既存ロジック (STORAGE_KEYなどはそのまま) ---
+    // --- 保存・表示ロジック ---
     var STORAGE_KEY = 'forest_survey_final_v3';
     window.onload = function() { renderTable(); };
 
@@ -245,9 +247,11 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
         resetForm();
         renderTable();
-        // 保存後、プロット番号は維持、立木番号を＋1
+        
+        // 次の入力準備
         document.getElementById('plotNo').value = p; 
         document.getElementById('treeNo').value = parseInt(t) + 1;
+        console.log("保存完了、次の立木番号: " + (parseInt(t) + 1));
     }
 
     function renderTable() {
@@ -300,7 +304,7 @@
         document.getElementById('dbh').value = "";
         document.getElementById('height').value = "";
         document.getElementById('memo').value = "";
-        document.getElementById('formTitle').innerText = "立木調査v1.2.1";
+        document.getElementById('formTitle').innerText = "立木調査v1.2.2";
         document.getElementById('saveBtn').innerText = "保存";
         document.getElementById('cancelBtn').style.display = "none";
     }
