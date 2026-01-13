@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tree-survey-v1.2.1'; // バージョンを上げて更新を通知202601101828
+const CACHE_NAME = 'tree-survey-v1.2.2'; // バージョンを上げて更新を通知
 const urlsToCache = [
   './',
   'index.html',
@@ -50,6 +50,7 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
 
 
 
