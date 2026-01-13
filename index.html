@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tree-survey-v2.2</title>
+    <title>立木調査 v2.2 (音声入力版)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#28a745">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="立木調査">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-title" content="立木調査v2">
+    <link rel="apple-touch-icon" href="icon-192.png?v=2">
 
     <style>
         body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
@@ -53,7 +53,7 @@
 <body>
 
 <div class="card">
-    <h2 id="formTitle">立木調査v2.2</h2>
+    <h2 id="formTitle">立木調査 v2.2 (試験版)</h2>
     <div id="voiceStatus">音声入力：オフ</div>
     
     <input type="hidden" id="editId" value="">
@@ -129,7 +129,7 @@
 </div>
 
 <div class="card">
-    <h2>登録済みデータ</h2>
+    <h2>登録済みデータ (v2専用)</h2>
     <button class="clear-btn" onclick="handleAllClear()">全データ消去</button>
     <div class="table-container">
         <table>
@@ -221,7 +221,9 @@
         }
     }
 
-    var STORAGE_KEY = 'forest_survey_final_v3';
+    // ★重要★ 安定版(v1)と衝突しないようにキーを変更
+    var STORAGE_KEY = 'forest_survey_v2_voice_data';
+
     window.onload = function() { renderTable(); };
 
     function handleSave() {
@@ -300,7 +302,7 @@
     }
 
     function handleAllClear() {
-        if(!confirm("全データを消去しますか？")) return;
+        if(!confirm("v2試験版の全データを消去しますか？\n（安定版のデータは消えません）")) return;
         localStorage.removeItem(STORAGE_KEY);
         renderTable();
     }
@@ -310,7 +312,7 @@
         document.getElementById('dbh').value = "";
         document.getElementById('height').value = "";
         document.getElementById('memo').value = "";
-        document.getElementById('formTitle').innerText = "立木調査v2.1";
+        document.getElementById('formTitle').innerText = "立木調査 v2.2 (試験版)";
         document.getElementById('saveBtn').innerText = "保存";
         document.getElementById('cancelBtn').style.display = "none";
     }
@@ -328,11 +330,10 @@
         var now = new Date();
         var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
         a.href = url;
-        a.download = "立木調査_" + dateStr + ".csv";
+        a.download = "立木調査_v2_" + dateStr + ".csv";
         a.click();
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
     }
 </script>
 </body>
 </html>
-
