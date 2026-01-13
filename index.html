@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>tree-survey-v2.1</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#28a745">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="立木調査">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <style>
         body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; }
@@ -60,7 +69,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>立木番号</label>
-            <span class="guide">※手入力（１の後は自動連番）</span>
+            <span class="guide">※手入力</span>
         </div>
         <input type="number" id="treeNo" inputmode="numeric">
     </div>
@@ -133,6 +142,13 @@
 </div>
 
 <script>
+    // --- Service Worker 登録 ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(err => console.log('SW Register Error:', err));
+    }
+
     // --- 音声認識設定 ---
     let recognition;
     let isListening = false;
@@ -172,47 +188,39 @@
     }
 
     function processVoiceCommand(text) {
-        // 数字のみを抽出する関数
         const getNum = (str) => {
             const m = str.replace(/ /g, "").match(/\d+(\.\d+)?/);
             return m ? m[0] : null;
         };
 
-        // 1. 保存処理
         if (text.includes("保存") || text.includes("ほぞん")) {
             handleSave();
             return;
         }
 
-        // 2. 樹種（「しゅるい」で判定）
         if (text.includes("種類") || text.includes("しゅるい")) {
             if (text.includes("すぎ") || text.includes("スギ")) document.getElementById('treeType').value = "スギ";
             if (text.includes("ひのき") || text.includes("ヒノキ")) document.getElementById('treeType').value = "ヒノキ";
             if (text.includes("たしん") || text.includes("他針")) document.getElementById('treeType').value = "他針";
             if (text.includes("たこう") || text.includes("他広")) document.getElementById('treeType').value = "他広";
         } 
-        // 3. 直径
         else if (text.includes("直径") || text.includes("ちょっけい")) {
             const n = getNum(text); if(n) document.getElementById('dbh').value = n;
         }
-        // 4. 樹高（「たかさ」で判定）
         else if (text.includes("高さ") || text.includes("たかさ")) {
             const n = getNum(text); if(n) document.getElementById('height').value = n;
         }
-        // 5. 材質
         else if (text.includes("材質") || text.includes("ざいしつ")) {
             if (text.includes("a") || text.includes("エー")) document.getElementById('quality').value = "A";
             if (text.includes("b") || text.includes("ビー")) document.getElementById('quality').value = "B";
             if (text.includes("c") || text.includes("シー")) document.getElementById('quality').value = "C";
         }
-        // 6. 備考（「めも」で判定）
         else if (text.includes("メモ") || text.includes("めも")) {
             let val = text.replace(/メモ|めも/, "").trim();
             document.getElementById('memo').value = val;
         }
     }
 
-    // --- 保存・表示ロジック ---
     var STORAGE_KEY = 'forest_survey_final_v3';
     window.onload = function() { renderTable(); };
 
@@ -248,10 +256,8 @@
         resetForm();
         renderTable();
         
-        // 次の入力準備
         document.getElementById('plotNo').value = p; 
         document.getElementById('treeNo').value = parseInt(t) + 1;
-        console.log("保存完了、次の立木番号: " + (parseInt(t) + 1));
     }
 
     function renderTable() {
@@ -304,7 +310,7 @@
         document.getElementById('dbh').value = "";
         document.getElementById('height').value = "";
         document.getElementById('memo').value = "";
-        document.getElementById('formTitle').innerText = "立木調査v1.2.2";
+        document.getElementById('formTitle').innerText = "立木調査v2.1";
         document.getElementById('saveBtn').innerText = "保存";
         document.getElementById('cancelBtn').style.display = "none";
     }
@@ -329,5 +335,3 @@
 </script>
 </body>
 </html>
-
-
