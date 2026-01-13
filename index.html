@@ -3,59 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>tree-survey</title>
+    <title>tree-survey-v1.2</title>
     <link rel="manifest" href="manifest.json">
     <style>
         body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; }
         h2 { margin-top: 0; font-size: 1.1em; color: #2c3e50; border-bottom: 2px solid #28a745; padding-bottom: 5px; margin-bottom: 15px; }
         
-        /* 横並びのためのスタイル */
-        .input-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+        /* 音声ステータス表示 */
+        #voiceStatus { 
+            font-size: 0.8em; color: #fff; background: #333; padding: 5px 10px; 
+            border-radius: 20px; margin-bottom: 10px; display: inline-block; min-height: 1.2em;
         }
-        .input-row label {
-            width: 110px; /* 項目名の幅を固定 */
-            font-size: 0.85em;
-            font-weight: bold;
-            margin: 0;
-            flex-shrink: 0; /* 幅を維持 */
-        }
+        .listening { background: #dc3545 !important; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .input-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .input-row label { width: 110px; font-size: 0.85em; font-weight: bold; margin: 0; flex-shrink: 0; }
         .input-row input, .input-row select {
-            flex-grow: 1; /* 残りの幅をすべて使う */
-            padding: 10px;
-            margin: 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-            -webkit-appearance: none;
-            background-color: white;
-            height: 44px; /* タップしやすい高さ */
+            flex-grow: 1; padding: 10px; margin: 0; border: 1px solid #ccc; border-radius: 6px;
+            font-size: 16px; box-sizing: border-box; -webkit-appearance: none; background-color: white; height: 44px;
         }
         
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        button { 
-            flex: 1; min-width: 80px; padding: 14px; font-size: 15px; border: none; 
-            border-radius: 6px; cursor: pointer; color: white; font-weight: bold; 
-        }
+        button { flex: 1; min-width: 80px; padding: 14px; font-size: 15px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; }
         .save-btn { background: #007bff; }
+        .voice-btn { background: #6f42c1; } /* 音声ボタン */
         .export-btn { background: #28a745; }
         .cancel-btn { background: #6c757d; display: none; }
-        
-        .clear-btn { 
-            position: absolute; top: 18px; right: 20px; 
-            background: #fff; color: #dc3545; border: 1px solid #dc3545; 
-            padding: 4px 8px; font-size: 11px; width: auto; min-width: auto; 
-        }
+        .clear-btn { position: absolute; top: 18px; right: 20px; background: #fff; color: #dc3545; border: 1px solid #dc3545; padding: 4px 8px; font-size: 11px; width: auto; min-width: auto; }
 
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; min-width: 600px; }
         th, td { border: 1px solid #ddd; padding: 8px 4px; text-align: center; }
         th { background: #e9ecef; }
-        
         .action-btns { display: flex; gap: 4px; justify-content: center; }
         .edit-btn { background: #ffc107; color: #212529; padding: 6px; width: 45px; border-radius: 4px; font-size: 11px; flex: none; }
         .del-btn { background: #dc3545; color: white; padding: 6px; width: 45px; border-radius: 4px; font-size: 11px; flex: none; }
@@ -64,19 +45,19 @@
 <body>
 
 <div class="card">
-    <h2 id="formTitle">立木調査v1.1</h2>
+    <h2 id="formTitle">立木調査v1.2</h2>
+    <div id="voiceStatus">音声入力：オフ</div>
+    
     <input type="hidden" id="editId" value="">
     
     <div class="input-row">
         <label>プロット番号</label>
         <input type="number" id="plotNo" inputmode="numeric">
     </div>
-    
     <div class="input-row">
         <label>立木番号</label>
         <input type="number" id="treeNo" inputmode="numeric">
     </div>
-    
     <div class="input-row">
         <label>樹種</label>
         <select id="treeType">
@@ -84,30 +65,27 @@
             <option value="他針">他針</option><option value="他広">他広</option>
         </select>
     </div>
-    
     <div class="input-row">
         <label>胸高直径 (cm)</label>
         <input type="number" step="0.1" id="dbh" inputmode="decimal">
     </div>
-
     <div class="input-row">
         <label>樹高 (m)</label>
         <input type="number" step="0.1" id="height" inputmode="decimal">
     </div>
-
     <div class="input-row">
         <label>材質</label>
         <select id="quality">
             <option value="A">A</option><option value="B">B</option><option value="C">C</option>
         </select>
     </div>
-
     <div class="input-row">
         <label>備考</label>
         <input type="text" id="memo">
     </div>
     
     <div class="btn-group">
+        <button id="voiceBtn" class="voice-btn" onclick="toggleVoice()">音声入力開始</button>
         <button id="saveBtn" class="save-btn" onclick="handleSave()">保存</button>
         <button id="cancelBtn" class="cancel-btn" onclick="resetForm()">取消</button>
         <button class="export-btn" onclick="handleExport()">CSV出力</button>
@@ -128,39 +106,92 @@
 </div>
 
 <script>
-    // --- PWA登録 & 更新通知ロジック ---
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                reg.onupdatefound = () => {
-                    const installingWorker = reg.installing;
-                    installingWorker.onstatechange = () => {
-                        if (installingWorker.state === 'installed') {
-                            if (navigator.serviceWorker.controller) {
-                                if (confirm("最新バージョンがあります。更新しますか？\n（更新前にCSV出力を行ってください）")) {
-                                    if (reg.waiting) {
-                                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                                    }
-                                    window.location.reload();
-                                }
-                            }
-                        }
-                    };
-                };
-            }).catch(err => console.error('PWA登録失敗', err));
-        });
+    // --- 1. 音声認識ロジック (オフライン対応) ---
+    let recognition;
+    let isListening = false;
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 
-        let refreshing;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (refreshing) return;
-            window.location.reload();
-            refreshing = true;
-        });
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.continuous = true; // 連続認識
+        recognition.interimResults = false; // 確定結果のみ
+
+        recognition.onresult = (event) => {
+            let lastText = event.results[event.results.length - 1][0].transcript.trim();
+            document.getElementById('voiceStatus').innerText = "認識中: " + lastText;
+            processVoiceCommand(lastText);
+        };
+
+        recognition.onend = () => {
+            if (isListening) recognition.start(); // 途切れたら再開
+        };
+
+        recognition.onerror = (err) => {
+            console.error("音声認識エラー:", err);
+            if (err.error === 'not-allowed') alert("マイクの使用を許可してください");
+        };
     }
 
-    // --- メイン処理 ---
-    var STORAGE_KEY = 'forest_survey_final_v3';
+    function toggleVoice() {
+        if (!recognition) return alert("このブラウザは音声認識に非対応です");
+        const btn = document.getElementById('voiceBtn');
+        const status = document.getElementById('voiceStatus');
 
+        if (!isListening) {
+            recognition.start();
+            isListening = true;
+            btn.innerText = "音声入力停止";
+            status.innerText = "音声入力：待機中...";
+            status.classList.add('listening');
+        } else {
+            isListening = false;
+            recognition.stop();
+            btn.innerText = "音声入力開始";
+            status.innerText = "音声入力：オフ";
+            status.classList.remove('listening');
+        }
+    }
+
+    // 音声コマンド処理
+    function processVoiceCommand(text) {
+        // 数字抽出用
+        const getNum = (str) => {
+            const m = str.match(/\d+(\.\d+)?/);
+            return m ? m[0] : null;
+        };
+
+        // コマンド分岐
+        if (text.includes("保存")) {
+            handleSave();
+        } else if (text.includes("次へ") || text.includes("次")) {
+            const treeNoEl = document.getElementById('treeNo');
+            treeNoEl.value = parseInt(treeNoEl.value || 0) + 1;
+            document.getElementById('dbh').value = "";
+            document.getElementById('height').value = "";
+        } else if (text.includes("プロット")) {
+            const n = getNum(text); if(n) document.getElementById('plotNo').value = n;
+        } else if (text.includes("立木")) {
+            const n = getNum(text); if(n) document.getElementById('treeNo').value = n;
+        } else if (text.includes("直径")) {
+            const n = getNum(text); if(n) document.getElementById('dbh').value = n;
+        } else if (text.includes("樹高")) {
+            const n = getNum(text); if(n) document.getElementById('height').value = n;
+        } else if (text.includes("スギ")) {
+            document.getElementById('treeType').value = "スギ";
+        } else if (text.includes("ヒノキ")) {
+            document.getElementById('treeType').value = "ヒノキ";
+        } else if (text.includes("材質")) {
+            if (text.includes("A") || text.includes("エー")) document.getElementById('quality').value = "A";
+            if (text.includes("B") || text.includes("ビー")) document.getElementById('quality').value = "B";
+            if (text.includes("C") || text.includes("シー")) document.getElementById('quality').value = "C";
+        } else if (text.includes("備考")) {
+            document.getElementById('memo').value = text.replace("備考", "").trim();
+        }
+    }
+
+    // --- 以下、既存ロジック ---
+    var STORAGE_KEY = 'forest_survey_final_v3';
     window.onload = function() { renderTable(); };
 
     function handleSave() {
@@ -194,7 +225,11 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
         resetForm();
         renderTable();
-        alert("保存しました");
+        // 保存時に立木番号を自動で+1する（連続入力をスムーズに）
+        document.getElementById('plotNo').value = p; 
+        document.getElementById('treeNo').value = parseInt(t) + 1;
+        
+        console.log("保存完了");
     }
 
     function renderTable() {
@@ -237,19 +272,17 @@
     }
 
     function handleAllClear() {
-        if(!confirm("保存されている全てのデータを消去しますか？\n（消去後は元に戻せません）")) return;
+        if(!confirm("全データを消去しますか？")) return;
         localStorage.removeItem(STORAGE_KEY);
         renderTable();
-        alert("消去が完了しました");
     }
 
     function resetForm() {
         document.getElementById('editId').value = "";
-        document.getElementById('treeNo').value = "";
         document.getElementById('dbh').value = "";
         document.getElementById('height').value = "";
         document.getElementById('memo').value = "";
-        document.getElementById('formTitle').innerText = "立木調査v1.1";
+        document.getElementById('formTitle').innerText = "立木調査v1.2";
         document.getElementById('saveBtn').innerText = "保存";
         document.getElementById('cancelBtn').style.display = "none";
     }
@@ -257,26 +290,20 @@
     function handleExport() {
         var list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         if(list.length === 0) { alert("データがありません"); return; }
-        
         var csv = "\ufeffプロット番号,立木番号,樹種,胸高直径(cm),樹高(m),材質,備考\n";
         list.forEach(item => {
             csv += `${item.plotNo},${item.treeNo},${item.treeType},${item.dbh},${item.height},${item.quality || 'A'},${(item.memo || "").replace(/,/g, " ")}\n`;
         });
-
         var blob = new Blob([csv], { type: 'text/csv' });
         var url = window.URL.createObjectURL(blob);
         var a = document.createElement("a");
-
         var now = new Date();
         var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
-
         a.href = url;
         a.download = "立木調査_" + dateStr + ".csv";
         a.click();
-        
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
     }
 </script>
 </body>
 </html>
-
