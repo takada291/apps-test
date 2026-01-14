@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>立木調査 v2.2 (音声入力版)</title>
+    <title>立木調査 v2.2.1 (音声入力版)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#28a745">
@@ -53,7 +53,7 @@
 <body>
 
 <div class="card">
-    <h2 id="formTitle">立木調査 v2.2 (試験版)</h2>
+    <h2 id="formTitle">立木調査 v2.2.1 (音声入力版)</h2>
     <div id="voiceStatus">音声入力：オフ</div>
     
     <input type="hidden" id="editId" value="">
@@ -69,7 +69,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>立木番号</label>
-            <span class="guide">※手入力</span>
+            <span class="guide">※手入力（入力後は自動連番）</span>
         </div>
         <input type="number" id="treeNo" inputmode="numeric">
     </div>
@@ -77,7 +77,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>樹種</label>
-            <span class="guide">※発音例「しゅるい すぎ」</span>
+            <span class="guide">※発音例「しゅるい すぎ、しゅるい　ほかしんようじゅ」</span>
         </div>
         <select id="treeType">
             <option value="スギ">スギ</option><option value="ヒノキ">ヒノキ</option>
@@ -114,7 +114,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>備考</label>
-            <span class="guide">※発音例「めも くまはぎ」</span>
+            <span class="guide">※発音例「めも からまつ、めも　くまはぎ」</span>
         </div>
         <input type="text" id="memo">
     </div>
@@ -125,7 +125,7 @@
         <button id="cancelBtn" class="cancel-btn" onclick="resetForm()">取消</button>
         <button class="export-btn" onclick="handleExport()">CSV出力</button>
     </div>
-    <div class="voice-guide-footer">※入力が終わりましたら「ほぞん」と発音して下さい。</div>
+    <div class="voice-guide-footer">※入力が終わり内容を確認したら「ほぞん」と発音して下さい。</div>
 </div>
 
 <div class="card">
@@ -337,3 +337,4 @@
 </script>
 </body>
 </html>
+
