@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>立木調査 v2.2</title>
+    <title>立木調査 v2.3</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#28a745">
@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="立木調査v2">
-    <link rel="apple-touch-icon" href="icon-192.png?v=2">
+    <link rel="apple-touch-icon" href="icon-192.png?v=3">
 
     <style>
         body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
@@ -53,7 +53,7 @@
 <body>
 
 <div class="card">
-    <h2 id="formTitle">立木調査 v2.2</h2>
+    <h2 id="formTitle">立木調査 v2.3 (音声版)</h2>
     <div id="voiceStatus">音声入力：オフ</div>
     
     <input type="hidden" id="editId" value="">
@@ -77,7 +77,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>樹種</label>
-            <span class="guide">※発音例「しゅるい すぎ、しゅるい　ほかしんようじゅ」</span>
+            <span class="guide">※発音例「しゅるい すぎ」</span>
         </div>
         <select id="treeType">
             <option value="スギ">スギ</option><option value="ヒノキ">ヒノキ</option>
@@ -129,7 +129,7 @@
 </div>
 
 <div class="card">
-    <h2>登録済みデータ</h2>
+    <h2>登録済みデータ (v2専用)</h2>
     <button class="clear-btn" onclick="handleAllClear()">全データ消去</button>
     <div class="table-container">
         <table>
@@ -147,6 +147,14 @@
         navigator.serviceWorker.register('sw.js')
         .then(() => console.log('Service Worker Registered'))
         .catch(err => console.log('SW Register Error:', err));
+    }
+
+    // --- 音声合成用設定（読み上げ） ---
+    let availableVoices = [];
+    if ('speechSynthesis' in window) {
+        const loadVoices = () => { availableVoices = window.speechSynthesis.getVoices(); };
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        setTimeout(loadVoices, 1000);
     }
 
     // --- 音声認識設定 ---
@@ -167,23 +175,67 @@
         };
 
         recognition.onend = () => { if (isListening) recognition.start(); };
+        
+        recognition.onerror = (event) => {
+            console.log("Voice Error:", event.error);
+            if(event.error === 'network' || event.error === 'not-allowed' || event.error === 'aborted') {
+                if(isListening) toggleVoiceUI(false);
+            }
+        };
+    }
+
+    function toggleVoiceUI(active) {
+        const btn = document.getElementById('voiceBtn');
+        const status = document.getElementById('voiceStatus');
+        isListening = active;
+        if (active) {
+            btn.innerText = "音声入力停止";
+            status.classList.add('listening');
+        } else {
+            btn.innerText = "音声入力開始";
+            status.innerText = "音声入力：オフ";
+            status.classList.remove('listening');
+            if(recognition) recognition.stop();
+        }
     }
 
     function toggleVoice() {
         if (!recognition) return alert("音声認識非対応です");
-        const btn = document.getElementById('voiceBtn');
-        const status = document.getElementById('voiceStatus');
+        
         if (!isListening) {
-            recognition.start();
-            isListening = true;
-            btn.innerText = "音声入力停止";
-            status.classList.add('listening');
+            try {
+                recognition.start();
+                toggleVoiceUI(true);
+                setTimeout(() => speakText("開始"), 100);
+            } catch (e) {
+                console.error(e);
+                toggleVoiceUI(false);
+            }
         } else {
-            isListening = false;
-            recognition.stop();
-            btn.innerText = "音声入力開始";
-            status.innerText = "音声入力：オフ";
-            status.classList.remove('listening');
+            toggleVoiceUI(false);
+        }
+    }
+
+    // --- 読み上げ関数 ---
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // 前の発話をキャンセル
+            const uttr = new SpeechSynthesisUtterance(text);
+            uttr.lang = "ja-JP";
+            uttr.rate = 1.2; // 少し早口でテキパキと
+
+            if(availableVoices.length === 0) {
+                availableVoices = window.speechSynthesis.getVoices();
+            }
+            // iOSオフライン対策：ローカルボイス優先
+            let targetVoice = availableVoices.find(v => v.lang === 'ja-JP' && v.localService === true);
+            if (!targetVoice) {
+                targetVoice = availableVoices.find(v => v.lang === 'ja-JP');
+            }
+            if (targetVoice) {
+                uttr.voice = targetVoice;
+            }
+            window.speechSynthesis.speak(uttr);
         }
     }
 
@@ -193,35 +245,65 @@
             return m ? m[0] : null;
         };
 
+        let matched = false;
+
+        // 保存
         if (text.includes("保存") || text.includes("ほぞん")) {
             handleSave();
+            speakText("保存");
             return;
         }
 
+        // 樹種
         if (text.includes("種類") || text.includes("しゅるい")) {
-            if (text.includes("すぎ") || text.includes("スギ")) document.getElementById('treeType').value = "スギ";
-            if (text.includes("ひのき") || text.includes("ヒノキ")) document.getElementById('treeType').value = "ヒノキ";
-            if (text.includes("たしん") || text.includes("他針")) document.getElementById('treeType').value = "他針";
-            if (text.includes("たこう") || text.includes("他広")) document.getElementById('treeType').value = "他広";
+            let targetType = "";
+            if (text.includes("すぎ") || text.includes("スギ")) targetType = "スギ";
+            else if (text.includes("ひのき") || text.includes("ヒノキ")) targetType = "ヒノキ";
+            else if (text.includes("たしん") || text.includes("他針")) targetType = "他針";
+            else if (text.includes("たこう") || text.includes("他広")) targetType = "他広";
+            
+            if(targetType){
+                document.getElementById('treeType').value = targetType;
+                speakText(targetType);
+                matched = true;
+            }
         } 
+        // 直径
         else if (text.includes("直径") || text.includes("ちょっけい")) {
-            const n = getNum(text); if(n) document.getElementById('dbh').value = n;
+            const n = getNum(text); 
+            if(n) {
+                document.getElementById('dbh').value = n;
+                speakText(n + "センチ");
+            }
         }
+        // 樹高
         else if (text.includes("高さ") || text.includes("たかさ")) {
-            const n = getNum(text); if(n) document.getElementById('height').value = n;
+            const n = getNum(text); 
+            if(n) {
+                document.getElementById('height').value = n;
+                speakText(n + "メートル");
+            }
         }
+        // 材質
         else if (text.includes("材質") || text.includes("ざいしつ")) {
-            if (text.includes("a") || text.includes("エー")) document.getElementById('quality').value = "A";
-            if (text.includes("b") || text.includes("ビー")) document.getElementById('quality').value = "B";
-            if (text.includes("c") || text.includes("シー")) document.getElementById('quality').value = "C";
+            let q = "";
+            if (text.includes("a") || text.includes("エー")) q = "A";
+            else if (text.includes("b") || text.includes("ビー")) q = "B";
+            else if (text.includes("c") || text.includes("シー")) q = "C";
+            
+            if(q){
+                document.getElementById('quality').value = q;
+                speakText("材質 " + q);
+            }
         }
+        // 備考
         else if (text.includes("メモ") || text.includes("めも")) {
             let val = text.replace(/メモ|めも/, "").trim();
             document.getElementById('memo').value = val;
+            speakText("メモ " + val);
         }
     }
 
-    // ★重要★ 安定版(v1)と衝突しないようにキーを変更
     var STORAGE_KEY = 'forest_survey_v2_voice_data';
 
     window.onload = function() { renderTable(); };
@@ -234,6 +316,8 @@
 
         if(!p || !t || !d) {
             alert("入力不足（プロット・立木・直径）");
+            // 警告も読み上げる
+            speakText("入力不足です");
             return;
         }
 
@@ -312,7 +396,7 @@
         document.getElementById('dbh').value = "";
         document.getElementById('height').value = "";
         document.getElementById('memo').value = "";
-        document.getElementById('formTitle').innerText = "立木調査 v2.2 (試験版)";
+        document.getElementById('formTitle').innerText = "立木調査 v2.3 (音声版)";
         document.getElementById('saveBtn').innerText = "保存";
         document.getElementById('cancelBtn').style.display = "none";
     }
@@ -337,8 +421,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
