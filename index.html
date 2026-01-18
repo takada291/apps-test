@@ -10,14 +10,13 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="立木調査">
+    <meta name="apple-mobile-web-app-title" content="立木調査v2">
     <link rel="apple-touch-icon" href="icon-192.png?v=4">
 
     <style>
         body { font-family: -apple-system, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; }
         
-        /* ヘッダーエリア（タイトル＋設定ボタン） */
         .header-area { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #28a745; margin-bottom: 15px; padding-bottom: 5px; }
         h2 { margin: 0; font-size: 1.1em; color: #2c3e50; border: none; }
         .settings-btn { background: #6c757d; color: white; padding: 6px 12px; font-size: 0.85em; border-radius: 6px; border: none; cursor: pointer; }
@@ -53,7 +52,6 @@
         .del-btn { background: #dc3545; color: white; padding: 6px; width: 45px; border-radius: 4px; font-size: 11px; }
         .voice-guide-footer { font-size: 0.82em; color: #dc3545; margin-top: 12px; font-weight: bold; text-align: center; background: #fff5f5; padding: 8px; border-radius: 8px; border: 1px dashed #dc3545; }
 
-        /* 設定モーダルのスタイル */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fff; margin: 15% auto; padding: 20px; border-radius: 12px; width: 85%; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .modal-header { font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px; color: #2c3e50; }
@@ -103,7 +101,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>胸高直径 (cm)</label>
-            <span class="guide">※発音例「ちょっけい さんじゅうろく」</span>
+            <span class="guide">※発音例「ちょっけい さん ぜろ」</span>
         </div>
         <input type="number" step="0.1" id="dbh" inputmode="decimal">
     </div>
@@ -111,7 +109,7 @@
     <div class="input-row">
         <div class="label-group">
             <label>樹高 (m)</label>
-            <span class="guide">※発音例「たかさ にじゅうよん」</span>
+            <span class="guide">※発音例「たかさ に ぜろ」</span>
         </div>
         <input type="number" step="0.1" id="height" inputmode="decimal">
     </div>
@@ -176,29 +174,22 @@
 </div>
 
 <script>
-    // --- データ保存キー設定 ---
-    // ★重要: v2試験版用のデータキー
     var STORAGE_KEY = 'forest_survey_v2_voice_data';
-    // ★設定保存用のキー
     const SETTINGS_KEY = 'forest_survey_settings';
     
-    // デフォルト樹種
     const DEFAULT_TREES = ['スギ', 'ヒノキ', '他針', '他広'];
     let currentSettings = { customTrees: [] };
 
-    // --- Service Worker 登録 ---
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
         .then(() => console.log('Service Worker Registered'))
         .catch(err => console.log('SW Register Error:', err));
     }
 
-    // --- 起動時処理 ---
     window.onload = function() {
-        loadSettings(); // 設定読み込み＆プルダウン構築
-        renderTable();  // データ表示
+        loadSettings();
+        renderTable();
         
-        // 読み上げボイスの準備
         if ('speechSynthesis' in window) {
             const loadVoices = () => { availableVoices = window.speechSynthesis.getVoices(); };
             window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -206,9 +197,7 @@
         }
     };
 
-    // --- 設定関連ロジック ---
     function openSettings() {
-        // 現在の設定を入力欄に反映
         [1,2,3,4,5].forEach((num, idx) => {
             document.getElementById('customTree'+num).value = currentSettings.customTrees[idx] || "";
         });
@@ -229,7 +218,7 @@
         currentSettings = { customTrees: newCustomTrees };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(currentSettings));
         
-        applySettingsToUI(); // プルダウン更新
+        applySettingsToUI();
         closeSettings();
         alert("設定を保存しました");
         speakText("設定を保存しました");
@@ -245,10 +234,9 @@
 
     function applySettingsToUI() {
         const select = document.getElementById('treeType');
-        const currentVal = select.value; // 選択中の値を保持
+        const currentVal = select.value;
         select.innerHTML = "";
         
-        // デフォルト樹種
         DEFAULT_TREES.forEach(tree => {
             const op = document.createElement('option');
             op.value = tree;
@@ -256,7 +244,6 @@
             select.appendChild(op);
         });
         
-        // 追加樹種
         currentSettings.customTrees.forEach(tree => {
             const op = document.createElement('option');
             op.value = tree;
@@ -264,13 +251,11 @@
             select.appendChild(op);
         });
 
-        // もし選択中だった値がリストにあれば再選択
         if ([...DEFAULT_TREES, ...currentSettings.customTrees].includes(currentVal)) {
             select.value = currentVal;
         }
     }
 
-    // --- 音声合成（読み上げ） ---
     let availableVoices = [];
     function speakText(text) {
         if ('speechSynthesis' in window) {
@@ -290,7 +275,6 @@
         }
     }
 
-    // --- 音声認識 ---
     let recognition;
     let isListening = false;
     const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
@@ -356,25 +340,20 @@
 
         let matched = false;
 
-        // 保存
         if (text.includes("保存") || text.includes("ほぞん")) {
             handleSave();
             speakText("保存");
             return;
         }
 
-        // 樹種（デフォルト + カスタム設定）
         if (text.includes("種類") || text.includes("しゅるい")) {
             let targetType = "";
-            // まずデフォルト
             if (text.includes("すぎ") || text.includes("スギ")) targetType = "スギ";
             else if (text.includes("ひのき") || text.includes("ヒノキ")) targetType = "ヒノキ";
             else if (text.includes("たしん") || text.includes("他針")) targetType = "他針";
             else if (text.includes("たこう") || text.includes("他広")) targetType = "他広";
             else {
-                // カスタム樹種の判定
                 currentSettings.customTrees.forEach(ct => {
-                    // 追加した樹種名が含まれているか確認
                     if (text.includes(ct.toLowerCase())) {
                         targetType = ct;
                     }
@@ -387,7 +366,6 @@
                 matched = true;
             }
         } 
-        // 直径
         else if (text.includes("直径") || text.includes("ちょっけい")) {
             const n = getNum(text); 
             if(n) {
@@ -395,7 +373,6 @@
                 speakText(n + "センチ");
             }
         }
-        // 樹高
         else if (text.includes("高さ") || text.includes("たかさ")) {
             const n = getNum(text); 
             if(n) {
@@ -403,7 +380,6 @@
                 speakText(n + "メートル");
             }
         }
-        // 材質
         else if (text.includes("材質") || text.includes("ざいしつ")) {
             let q = "";
             if (text.includes("a") || text.includes("エー")) q = "A";
@@ -415,7 +391,6 @@
                 speakText("材質 " + q);
             }
         }
-        // 備考
         else if (text.includes("メモ") || text.includes("めも")) {
             let val = text.replace(/メモ|めも/, "").trim();
             document.getElementById('memo').value = val;
@@ -423,7 +398,6 @@
         }
     }
 
-    // --- データ処理 ---
     function handleSave() {
         var p = document.getElementById('plotNo').value;
         var t = document.getElementById('treeNo').value;
@@ -519,22 +493,32 @@
     function handleExport() {
         var list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         if(list.length === 0) { alert("データがありません"); return; }
+        
         var csv = "\ufeffプロット番号,立木番号,樹種,胸高直径(cm),樹高(m),材質,備考\n";
         list.forEach(item => {
             csv += `${item.plotNo},${item.treeNo},${item.treeType},${item.dbh},${item.height},${item.quality || 'A'},${(item.memo || "").replace(/,/g, " ")}\n`;
         });
+
         var blob = new Blob([csv], { type: 'text/csv' });
         var url = window.URL.createObjectURL(blob);
         var a = document.createElement("a");
+        
         var now = new Date();
-        var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+        var yyyy = now.getFullYear();
+        var mm = String(now.getMonth() + 1).padStart(2, '0');
+        var dd = String(now.getDate()).padStart(2, '0');
+        var hh = String(now.getHours()).padStart(2, '0');
+        var min = String(now.getMinutes()).padStart(2, '0');
+        
+        // ファイル名を指示通りに変更
+        var filename = `立木調査-${yyyy}${mm}${dd}-${hh}${min}.csv`;
+
         a.href = url;
-        a.download = "立木調査_v2_" + dateStr + ".csv";
+        a.download = filename;
         a.click();
+        
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
     }
 </script>
 </body>
 </html>
-
-
