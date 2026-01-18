@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tree-survey-v2.4.1';2026.01.17 21:31
+const CACHE_NAME = 'tree-survey-v2.4.2';2026.01.18 14:54
 const urlsToCache = [
   './',
   'index.html',
@@ -37,6 +37,7 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
 
 
 
