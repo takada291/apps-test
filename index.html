@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>立木調査 v2.4</title>
+    <title>立木調査</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#28a745">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="立木調査v2">
+    <meta name="apple-mobile-web-app-title" content="立木調査">
     <link rel="apple-touch-icon" href="icon-192.png?v=4">
 
     <style>
@@ -66,7 +66,7 @@
 
 <div class="card">
     <div class="header-area">
-        <h2 id="formTitle">立木調査 v2.4 (設定付)</h2>
+        <h2 id="formTitle">立木調査 v2.4</h2>
         <button class="settings-btn" onclick="openSettings()">⚙️ 設定</button>
     </div>
 
@@ -475,7 +475,7 @@
     }
 
     function handleAllClear() {
-        if(!confirm("v2試験版の全データを消去しますか？\n（安定版のデータは消えません）")) return;
+        if(!confirm("全データを消去しますか？")) return;
         localStorage.removeItem(STORAGE_KEY);
         renderTable();
     }
@@ -485,7 +485,7 @@
         document.getElementById('dbh').value = "";
         document.getElementById('height').value = "";
         document.getElementById('memo').value = "";
-        document.getElementById('formTitle').innerText = "立木調査 v2.4 (設定付)";
+        document.getElementById('formTitle').innerText = "立木調査 v2.4";
         document.getElementById('saveBtn').innerText = "保存";
         document.getElementById('cancelBtn').style.display = "none";
     }
@@ -522,5 +522,6 @@
 </script>
 </body>
 </html>
+
 
 
