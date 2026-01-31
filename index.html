@@ -73,7 +73,7 @@
 
 <div class="card">
     <div class="header-area">
-        <h2 id="formTitle">立木調査 v3.2</h2>
+        <h2 id="formTitle">立木調査 v3.3</h2>
         <button class="settings-btn" onclick="openSettings()">⚙️ 設定</button>
     </div>
 
@@ -201,7 +201,8 @@
     let currentSettings = { customTrees: [], customMemos: [] };
 
     // ■ TensorFlow.js 関連変数
-    const MODEL_URL = "./voice_model/";
+    // ↓「./」ではなく、現在のURLを使って「https://...」の完全な住所を作る魔法のコードに変更
+    const MODEL_URL = new URL("./voice_model/", window.location.href).href;
     let recognizer;
     let isListening = false;
     let lastVoiceCommandTime = 0; // 連続反応防止用
@@ -523,5 +524,6 @@
 </script>
 </body>
 </html>
+
 
 
