@@ -1,5 +1,5 @@
 // バージョン名を更新しました（これを変えるとブラウザが「新しい！」と認識して再読み込みします）
-const CACHE_NAME = 'tree-survey-v3.2.0_voice_fix'; 
+const CACHE_NAME = 'tree-survey-v3.3.0_voice_fix'; 
 const urlsToCache = [
   './',
   'index.html',
@@ -48,5 +48,6 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
 
 
