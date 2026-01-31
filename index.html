@@ -73,7 +73,7 @@
 
 <div class="card">
     <div class="header-area">
-        <h2 id="formTitle">立木調査 v3.1</h2>
+        <h2 id="formTitle">立木調査 v3.2</h2>
         <button class="settings-btn" onclick="openSettings()">⚙️ 設定</button>
     </div>
 
@@ -222,7 +222,7 @@
             document.getElementById('voiceStatus').innerText = "音声入力：準備OK";
         } catch (e) {
             console.error(e);
-            document.getElementById('voiceStatus').innerText = "音声モデル読込エラー(ファイル未配置?)";
+            document.getElementById('voiceStatus').innerText = "エラー: " + e.message;
         }
     };
 
@@ -523,4 +523,5 @@
 </script>
 </body>
 </html>
+
 
