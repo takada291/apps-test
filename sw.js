@@ -1,5 +1,5 @@
 // バージョン名を変更して、以前のキャッシュ（音声モデル含む）を破棄させます
-const CACHE_NAME = 'tree-survey-v2.4.1-restore';
+const CACHE_NAME = 'tree-survey-v2.4.2-restore';
 const urlsToCache = [
   './',
   'index.html',
